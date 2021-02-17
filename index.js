@@ -11,6 +11,17 @@ var _res = http.ServerResponse.prototype
 _res.send = function(a) {
 	this.write(a)
 }
+_res.render = function(a, b) {
+	var data = fs.readFileSync(__dirname + '/views/' + a)
+
+	for(var key in b) {
+		var re = new RegExp(`{{${key}}}`, 'g')
+		data = data.toString().replace(re, b[key])
+		console.log(re.toString())
+	}
+
+	this.send(data)
+}
 
 class tinyhttp {
 	constructor(port, ip) {
