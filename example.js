@@ -10,4 +10,6 @@ app.route('/get', 'get', (req, res) => {
 	res.send('well cum to route(get)')
 })
 
+app.static('/static')
+
 app.run()
