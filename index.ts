@@ -1,21 +1,24 @@
 import { ServerResponse, IncomingMessage, Server, createServer } from 'http'
-import { readFileSync } from 'fs'
+import { readFileSync, readFile, lstatSync } from 'fs'
 
 // routes
 var routes = {}
+var staticRoutes = []
 
 // express like
 class ExpressServerResponse extends ServerResponse {
-	send?(a, b?: object) {
-		let headers
-		if (!b) headers = { 'Content-Type': 'text/html' }
+	send?(a, b?: number, c?: object) {
+		let headers: any = { 'Content-Type': 'text/html' }
+		if (c) headers = c
 
-		this.writeHead(200, headers)
+		let status = 200
+		if (b) status = b
+
+		this.writeHead(status, headers)
 		this.write(a);
 	}
-	json?(a) {
-		this.writeHead(200, { 'Content-Type': 'application/json' })
-		this.write(JSON.stringify(a));
+	json?(a, b?) {
+		this.send(JSON.stringify(a), b | 200, { 'Content-Type': 'application/json' })
 	}
 	render?(a, b) {
 		let data = readFileSync(__dirname + '/views/' + a, 'utf8')
@@ -52,6 +55,8 @@ class tinyhttp {
 	constructor() {
 		// create server
 		this.server = createServer((req, res: ExpressServerResponse) => {
+			console.log(`${req.method} ${req.socket.remoteAddress} ${req.url}`)
+
 			res.send = ExpressServerResponse.prototype.send
 			res.json = ExpressServerResponse.prototype.json
 			res.render = ExpressServerResponse.prototype.render
@@ -62,11 +67,32 @@ class tinyhttp {
 					try {
 						route.callback(req, res)
 					} catch (e) {
-						res.writeHead(500)
+						res.send('Internal Server Error', 500)
 						console.log(`Router: Callback error: ${e}\nStack: ` + e.stack)
 					}
 				}
 				res.end()
+			}
+			else {
+				staticRoutes.forEach(route => {
+					if (req.url.startsWith(route.path)) {
+						if (lstatSync(__dirname + req.url).isDirectory()) req.url += '/index.html'
+
+						readFile(__dirname + req.url, (e, data) => {
+							if (!e) {
+								res.send(data)
+							}
+							else {
+								console.log(e)
+								res.send('Not Found', 404)
+							}
+							res.end()
+						})
+					} else {
+						res.send('Not Found', 404)
+						res.end()
+					}
+				})
 			}
 			return this
 		})
@@ -104,6 +130,9 @@ class tinyhttp {
 		this.route(url, methods.POST, callback)
 	}
 	// static
+	static(url: string) {
+		staticRoutes.push({ path: url });
+	}
 }
 
 export default tinyhttp
