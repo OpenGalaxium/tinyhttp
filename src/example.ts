@@ -1,11 +1,10 @@
 import tinyhttp from './index'
-import { IncomingMessage } from 'http'
+import parser from './parser'
 
 const app = new tinyhttp()
 
-// app.use((req: IncomingMessage, res) => { // logger
-// 	console.log(`${req.method} ${req.url} ${req.socket.remoteAddress}\nBody: `, req)
-// })
+app.use(parser.json)
+app.use(parser.urlencoded)
 
 app.get('/', (req, res) => {
 	res.send('working!')
@@ -13,6 +12,10 @@ app.get('/', (req, res) => {
 
 app.get('/json', (req, res) => {
 	res.json({ status: 'working' })
+})
+
+app.post('/post', (req, res) => {
+	res.send(req.body)
 })
 
 app.get('/render', (req, res) => {
