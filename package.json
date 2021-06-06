@@ -1,6 +1,6 @@
 {
 	"name": "@opengalaxium/tinyhttp",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Light, fast, compact web framework",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -11,13 +11,13 @@
 	"scripts": {
 		"test": "ts-node src/example/example.ts",
 		"build": "tsc",
-		"publish": "npm publish"
+		"publish-pkg": "npm publish"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/OpenGalaxium/tinyhttp.git"
 	},
-	"keywords": [],
+	"keywords": ["tinyhttp", "web", "framework", "rest", "restful", "api", "router", "middlewares", "middleware", "body-parser", "app", "sinatra"],
 	"author": {
 		"name": "OpenGalaxium",
 		"url": "https://github.com/OpenGalaxium"
