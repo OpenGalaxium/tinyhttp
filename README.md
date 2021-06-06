@@ -6,7 +6,9 @@ GitHub repo: https://github.com/OpenGalaxium/tinyhttp
 npm package: https://www.npmjs.com/package/@opengalaxium/tinyhttp
 
 # Installation
+```console
 npm i @opengalaxium/tinyhttp
+```
 
 # Example usage
 index.ts
