@@ -8,7 +8,7 @@
 		"@types/node": "^15.0.2"
 	},
 	"scripts": {
-		"test": "ts-node example.ts",
+		"test": "ts-node src/example.ts",
 		"build": "tsc"
 	},
 	"repository": {

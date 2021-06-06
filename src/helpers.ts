@@ -16,13 +16,12 @@ class ExpressServerResponse extends ServerResponse {
         this.writeHead(status, headers)
         let res = a
         if (typeof res === 'object') res = JSON.stringify(res, null, 2)
-        else res = JSON.stringify(res, null, 2)
 
         this.write(res)
     }
 
     json?(a, b?) {
-        this.send(JSON.stringify(a), b | 200, { 'Content-Type': 'application/json' })
+        this.send(a, b | 200, { 'Content-Type': 'application/json' })
     }
 
     render?(a, b) {
@@ -31,14 +30,13 @@ class ExpressServerResponse extends ServerResponse {
         for (var key in b) {
             var re = new RegExp(`{{${key}}}`, 'g')
             data = data.toString().replace(re, b[key])
-            console.log(re.toString())
         }
 
         this.send(data)
     }
 }
 
-enum methods {
+enum HttpMethods {
     GET,
     HEAD,
     POST,
@@ -51,4 +49,6 @@ enum methods {
     ALL
 }
 
-export { ExpressIncomingMessage, ExpressServerResponse, methods }
+type MiddlewareCallback = (req: ExpressIncomingMessage, res: ExpressServerResponse, next?: Function) => void;
+
+export { ExpressIncomingMessage, ExpressServerResponse, HttpMethods, MiddlewareCallback }

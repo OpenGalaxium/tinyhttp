@@ -12,10 +12,10 @@ export default class Parser {
     public static async json(req, res, next) {
         // checks
         if (!req) throw ReferenceError('req is undefined')
-        if (req.parsed) return next()
-        if (!req.body) throw ReferenceError('req.body is undefined')
         if (!next) throw ReferenceError('next is undefined')
         if (typeof next !== 'function') throw TypeError('next must be a function')
+        if (req.parsed) return next()
+        if (!req.body) return next()
 
         // parsing
         let parsed = await Parser.toJsonSafe(req.body)
@@ -29,10 +29,10 @@ export default class Parser {
     public static async urlencoded(req, res, next) {
         // checks
         if (!req) throw ReferenceError('req is undefined')
-        if (req.parsed) return next()
-        if (!req.body) throw ReferenceError('req.body is undefined')
         if (!next) throw ReferenceError('next is undefined')
         if (typeof next !== 'function') throw TypeError('next must be a function')
+        if (req.parsed) return next()
+        if (!req.body) return next()
 
         // parsing
         let parsed = {}

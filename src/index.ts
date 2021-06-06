@@ -2,15 +2,14 @@ import { Server, createServer } from 'http'
 import { readFile, lstatSync } from 'fs'
 import { types } from 'util'
 
-// routes
-let routes = {}
-let staticRoutes = []
-let middlewares = []
-
-import { ExpressIncomingMessage, ExpressServerResponse, methods } from './helpers'
-// all http methods
+import { ExpressIncomingMessage, ExpressServerResponse, HttpMethods, MiddlewareCallback } from './helpers'
 
 class tinyhttp {
+	// routes
+	routes = {}
+	staticRoutes = []
+	middlewares = []
+
 	port: number
 	host: string
 	server: Server
@@ -26,7 +25,6 @@ class tinyhttp {
 
 			req.on('end', async () => {
 				req.body = data
-				console.log(data)
 				console.log(`${req.method} ${req.socket.remoteAddress} ${req.url}`)
 				let start = Date.now()
 
@@ -34,7 +32,7 @@ class tinyhttp {
 				res.json = ExpressServerResponse.prototype.json
 				res.render = ExpressServerResponse.prototype.render
 
-				await middlewares.reduce((promise, middleware) => promise.then(result => {
+				await this.middlewares.reduce((promise, middleware) => promise.then(result => {
 					if (types.isNativeError(result)) return Promise.reject(result)
 
 					return new Promise((next, reject) => {
@@ -42,9 +40,9 @@ class tinyhttp {
 					})
 				}), Promise.resolve())
 
-				var route = routes[req.url]
+				var route = this.routes[req.url]
 				if (route) {
-					if (req.method == route.method || route.method == methods.ALL) {
+					if (req.method == route.method || route.method == HttpMethods.ALL) {
 						try {
 							route.callback(req, res)
 						} catch (e) {
@@ -55,11 +53,11 @@ class tinyhttp {
 					res.end()
 				}
 				else {
-					staticRoutes.forEach(route => {
+					this.staticRoutes.forEach(route => {
 						if (req.url.startsWith(route.path)) {
 							if (lstatSync(__dirname + req.url).isDirectory()) req.url += '/index.html'
 
-							readFile(__dirname + req.url, (e, data) => {
+							readFile(__dirname + req.url, 'utf8', (e, data) => {
 								if (!e) {
 									res.send(data)
 								}
@@ -82,51 +80,53 @@ class tinyhttp {
 		})
 	}
 	// start server
-	run(port: number, host: string, callback: (host: string, port: number) => void) {
-		this.port = port
-		this.host = host
+	async run(port: number, host: string) {
+		return new Promise<number>((resolve, reject) => {
+			this.port = port
+			this.host = host
 
-		this.server.on('error', function (e: Error) {
-			console.log(e.stack)
+			this.server.on('error', function (e: Error) {
+				reject(e.stack)
+			})
+
+			this.server.once('listening', () => {
+				resolve(port)
+			})
+
+			this.server.listen(this.port, this.host)
 		})
-
-		this.server.once('listening', () => {
-			callback(this.host, this.port)
-		})
-
-		this.server.listen(this.port, this.host)
 	}
 
 	// add new route
-	route(url: string, method: methods, callback: Function = function (req: ExpressIncomingMessage, res: ExpressServerResponse) { }) {
-		routes[url] = {
-			method: methods[method],
+	route(url: string, method: HttpMethods, callback: MiddlewareCallback) {
+		this.routes[url] = {
+			method: HttpMethods[method],
 			callback: callback
 		}
 	}
 
 	// some routes
-	all(url: string, callback: Function = function (req: ExpressIncomingMessage, res: ExpressServerResponse) { }) {
-		this.route(url, methods.ALL, callback)
+	all(url: string, callback: MiddlewareCallback) {
+		this.route(url, HttpMethods.ALL, callback)
 	}
-	get(url: string, callback: Function = function (req: ExpressIncomingMessage, res: ExpressServerResponse) { }) {
-		this.route(url, methods.GET, callback)
+	get(url: string, callback: MiddlewareCallback) {
+		this.route(url, HttpMethods.GET, callback)
 	}
-	post(url: string, callback: Function = function (req: ExpressIncomingMessage, res: ExpressServerResponse) { }) {
-		this.route(url, methods.POST, callback)
+	post(url: string, callback: MiddlewareCallback) {
+		this.route(url, HttpMethods.POST, callback)
 	}
 
 	// static
 	static(url: string) {
-		staticRoutes.push({ path: url })
+		this.staticRoutes.push({ path: url })
 	}
 
 	// middleware
-	use(middleware: any) {
+	use(middleware: MiddlewareCallback | Function | tinyhttp) {
 		if (typeof middleware != 'function') {
-			throw TypeError('middleware must be a \'function\'')
+			throw TypeError('middleware must be a function');
 		}
-		middlewares.push(middleware)
+		this.middlewares.push(middleware)
 	}
 }
 

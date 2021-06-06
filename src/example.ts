@@ -1,29 +1,15 @@
 import tinyhttp from './index'
 import parser from './parser'
 
+import routes from './routes';
+
 const app = new tinyhttp()
 
 app.use(parser.json)
 app.use(parser.urlencoded)
 
-app.get('/', (req, res) => {
-	res.send('working!')
-})
+routes(app) // using all routes from file
 
-app.get('/json', (req, res) => {
-	res.json({ status: 'working' })
-})
-
-app.post('/post', (req, res) => {
-	res.send(req.body)
-})
-
-app.get('/render', (req, res) => {
-	res.render('index.html', { title: 'res.render example', msg: 'well cum to render' })
-})
-
-app.static('/www')
-
-app.run(8080, 'localhost', (host, port) => {
-	console.log('tinyhttp is running on http://' + host + ':' + port)
+app.run(8080, 'localhost').then((port) => {
+	console.log(`tinyhttp is running on port ${port}`)
 })
