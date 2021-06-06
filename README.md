@@ -11,8 +11,8 @@ npm i @opengalaxium/tinyhttp
 # Example usage
 index.ts
 ```ts
-import tinyhttp from 'tinyhttp'
-import { parser } from 'tinyhttp'
+import tinyhttp from '@opengalaxium/tinyhttp'
+import { parser } from '@opengalaxium/tinyhttp'
 import routes from './routes'
 
 const app = new tinyhttp()

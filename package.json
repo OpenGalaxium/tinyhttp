@@ -1,6 +1,6 @@
 {
 	"name": "@opengalaxium/tinyhttp",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Light, fast, compact web framework",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
