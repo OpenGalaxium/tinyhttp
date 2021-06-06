@@ -1,5 +1,5 @@
 import tinyhttp from '../index'
-import parser from '../parser'
+import { parser } from '../index'
 
 import routes from './routes';
 
@@ -10,6 +10,10 @@ app.use(parser.urlencoded)
 
 routes(app) // using all routes from file
 
-app.run(8080, 'localhost').then((port) => {
+app.get('/', (req, res) => {
+	res.send('working!')
+})
+
+app.run(80, 'localhost').then((port) => {
 	console.log(`tinyhttp is running on port ${port}`)
 })

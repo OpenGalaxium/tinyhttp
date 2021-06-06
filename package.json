@@ -1,15 +1,17 @@
 {
-	"name": "tinyhttp",
-	"version": "1.0.0",
+	"name": "@opengalaxium/tinyhttp",
+	"version": "1.0.1",
 	"description": "Light, fast, compact web framework",
-	"main": "src/index.ts",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "^15.0.2"
 	},
 	"scripts": {
-		"test": "ts-node src/example.ts",
-		"build": "tsc"
+		"test": "ts-node src/example/example.ts",
+		"build": "tsc",
+		"publish": "npm publish"
 	},
 	"repository": {
 		"type": "git",

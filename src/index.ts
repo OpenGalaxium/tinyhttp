@@ -1,12 +1,14 @@
 import { Server, createServer } from 'http'
-import { readFile, lstatSync } from 'fs'
+import { readFile, lstat } from 'fs'
 import { types } from 'util'
 
 import { ExpressIncomingMessage, ExpressServerResponse, HttpMethods, MiddlewareCallback } from './helpers'
+import parser from './parser'
+import Route from './route'
 
 class tinyhttp {
 	// routes
-	routes = {}
+	routes: Route[] = []
 	staticRoutes = []
 	middlewares = []
 
@@ -40,45 +42,63 @@ class tinyhttp {
 					})
 				}), Promise.resolve())
 
-				var route = this.routes[req.url]
+				// finding route
+				for (let _route of this.routes) {
+					if (_route.url == req.url)
+						if (_route.method == req.method || _route.method == HttpMethods[HttpMethods.ALL])
+							var route = _route
+				}
+
 				if (route) {
-					if (req.method == route.method || route.method == HttpMethods.ALL) {
-						try {
-							route.callback(req, res)
-						} catch (e) {
-							res.send('Internal Server Error', 500)
-							console.log(`Router: Callback error: ${e}\nStack: ` + e.stack)
-						}
+					try {
+						await route.callback(req, res)
+					} catch (e) {
+						res.send('Internal Server Error', 500)
+						console.log(`Router: Callback error: ${e}\nStack: ` + e.stack)
 					}
 					res.end()
 				}
 				else {
-					this.staticRoutes.forEach(route => {
+					for (let route of this.staticRoutes) {
 						if (req.url.startsWith(route.path)) {
-							if (lstatSync(__dirname + req.url).isDirectory()) req.url += '/index.html'
+							if ((await lstat.__promisify__(__dirname + req.url)).isDirectory()) req.url += '/index.html'
 
+							// reading file
 							readFile(__dirname + req.url, 'utf8', (e, data) => {
+								// sending
 								if (!e) {
 									res.send(data)
 								}
+								// error
 								else {
-									console.log(e)
-									res.send('Not Found', 404)
+									// if not found
+									if (e.code == 'ENOENT') {
+										console.log('Not Found')
+										res.send('Not Found', 404)
+									}
+									// else 500
+									else {
+										console.log(e)
+										res.send('Internal Server Error', 500)
+									}
 								}
 								res.end()
 							})
 						} else {
+							console.log('Not Found')
 							res.send('Not Found', 404)
 							res.end()
 						}
-					})
+					}
 				}
+
 				let end = Date.now()
 				console.log(`Request time: ${end - start}ms`)
 				return this
 			})
 		})
 	}
+
 	// start server
 	async run(port: number, host: string) {
 		return new Promise<number>((resolve, reject) => {
@@ -99,10 +119,9 @@ class tinyhttp {
 
 	// add new route
 	route(url: string, method: HttpMethods, callback: MiddlewareCallback) {
-		this.routes[url] = {
-			method: HttpMethods[method],
-			callback: callback
-		}
+		let route = new Route(url, HttpMethods[method], callback);
+
+		this.routes.push(route)
 	}
 
 	// some routes
@@ -131,3 +150,4 @@ class tinyhttp {
 }
 
 export default tinyhttp
+export { parser }
