@@ -1,7 +1,7 @@
 {
 	"name": "tinyhttp",
 	"version": "1.0.0",
-	"description": "",
+	"description": "Light, fast, compact web framework",
 	"main": "src/index.ts",
 	"dependencies": {},
 	"devDependencies": {
@@ -16,8 +16,21 @@
 		"url": "git+https://github.com/OpenGalaxium/tinyhttp.git"
 	},
 	"keywords": [],
-	"author": "",
-	"license": "ISC",
+	"author": {
+		"name": "OpenGalaxium",
+		"url": "https://github.com/OpenGalaxium"
+	},
+	"contributors": [
+		{
+			"name": "Partur1",
+			"url": "https://github.com/Partur1"
+		},
+		{
+			"name": "cafeed28",
+			"url": "https://github.com/cafeed28"
+		}
+	],
+	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/OpenGalaxium/tinyhttp/issues"
 	},
