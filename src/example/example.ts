@@ -1,5 +1,5 @@
-import tinyhttp from './index'
-import parser from './parser'
+import tinyhttp from '../index'
+import parser from '../parser'
 
 import routes from './routes';
 

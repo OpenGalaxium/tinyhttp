@@ -1,4 +1,4 @@
-import tinyhttp from './index'
+import tinyhttp from '../index'
 
 function routes(app: tinyhttp) {
     app.get('/', (req, res) => {
