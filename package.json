@@ -2,7 +2,7 @@
 	"name": "tinyhttp",
 	"version": "1.0.0",
 	"description": "",
-	"main": "index.js",
+	"main": "src/index.ts",
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "^15.0.2"
