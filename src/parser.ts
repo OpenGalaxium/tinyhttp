@@ -39,7 +39,11 @@ export default class Parser {
         let arr = req.body.split('&')
         for (let item of arr) {
             let kv = item.split('=')
-            parsed[kv[0]] = kv[1]
+
+            let key = kv.shift()
+            let value = kv.join('=')
+
+            parsed[key] = value
         }
         req.parsed = true
         req.body = parsed

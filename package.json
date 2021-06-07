@@ -1,6 +1,6 @@
 {
 	"name": "@opengalaxium/tinyhttp",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "Light, fast, compact web framework",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -17,7 +17,20 @@
 		"type": "git",
 		"url": "git+https://github.com/OpenGalaxium/tinyhttp.git"
 	},
-	"keywords": ["tinyhttp", "web", "framework", "rest", "restful", "api", "router", "middlewares", "middleware", "body-parser", "app", "sinatra"],
+	"keywords": [
+		"tinyhttp",
+		"web",
+		"framework",
+		"rest",
+		"restful",
+		"api",
+		"router",
+		"middlewares",
+		"middleware",
+		"body-parser",
+		"app",
+		"sinatra"
+	],
 	"author": {
 		"name": "OpenGalaxium",
 		"url": "https://github.com/OpenGalaxium"
