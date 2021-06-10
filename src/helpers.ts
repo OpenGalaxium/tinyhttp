@@ -25,7 +25,7 @@ class ExpressServerResponse extends ServerResponse {
     }
 
     render?(a, b) {
-        let data = readFileSync(__dirname + '/views/' + a, 'utf8')
+        let data = readFileSync('views/' + a, 'utf8')
 
         for (var key in b) {
             var re = new RegExp(`{{${key}}}`, 'g')

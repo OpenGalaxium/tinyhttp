@@ -34,6 +34,8 @@ export default class Parser {
         if (req.parsed) return next()
         if (!req.body) return next()
 
+        req.body = decodeURIComponent(req.body.replace(/\+/g, ' '))
+
         // parsing
         let parsed = {}
         let arr = req.body.split('&')
