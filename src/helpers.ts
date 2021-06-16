@@ -50,5 +50,6 @@ enum HttpMethods {
 }
 
 type MiddlewareCallback = (req: ExpressIncomingMessage, res: ExpressServerResponse, next?: Function) => void;
+type ErrorHandler = (err: Error, req: ExpressIncomingMessage, res: ExpressServerResponse) => void;
 
-export { ExpressIncomingMessage, ExpressServerResponse, HttpMethods, MiddlewareCallback }
+export { ExpressIncomingMessage, ExpressServerResponse, HttpMethods, MiddlewareCallback, ErrorHandler }

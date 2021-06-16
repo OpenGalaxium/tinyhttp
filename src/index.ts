@@ -1,22 +1,33 @@
 import { Server, createServer } from 'http'
-import { readFile, lstat } from 'fs'
+import { readFile, lstat } from 'fs/promises'
 import { types } from 'util'
 
-import { ExpressIncomingMessage, ExpressServerResponse, HttpMethods, MiddlewareCallback } from './helpers'
+import { ExpressIncomingMessage, ExpressServerResponse, HttpMethods, MiddlewareCallback, ErrorHandler } from './helpers'
 import parser from './parser'
 import Route from './route'
+
+type tinyhttpParams = {
+	log?: boolean
+}
 
 class tinyhttp {
 	// routes
 	routes: Route[] = []
 	staticRoutes = []
 	middlewares = []
+	errorHandler: ErrorHandler
 
 	port: number
 	host: string
 	server: Server
 
-	constructor() {
+	// params
+	log = false
+
+	constructor(params?: tinyhttpParams) {
+		if (params) {
+			if (params.log) this.log = true
+		}
 		// create server
 		this.server = createServer((req: ExpressIncomingMessage, res: ExpressServerResponse) => {
 			let data = ''
@@ -27,7 +38,7 @@ class tinyhttp {
 
 			req.on('end', async () => {
 				req.body = data
-				console.log(`${req.method} ${req.socket.remoteAddress} ${req.url}`)
+				if (this.log) console.log(`${req.method} ${req.socket.remoteAddress} ${req.url}`)
 				let start = Date.now()
 
 				res.send = ExpressServerResponse.prototype.send
@@ -49,51 +60,63 @@ class tinyhttp {
 							var route = _route
 				}
 
+				let ended = false
+
 				if (route) {
 					try {
 						await route.callback(req, res)
 					} catch (e) {
-						res.send('Internal Server Error', 500)
-						console.log(`Router: Callback error: ${e}\nStack: ` + e.stack)
+						if (!this.errorHandler) res.send('Internal Server Error', 500)
+						else this.errorHandler(e, req, res)
+
+						if (this.log) console.log(`Router: Callback error: ${e}\nStack: ` + e.stack)
 					}
 					res.end()
+					ended = true
 				}
 				else {
-					for (let route of this.staticRoutes) {
-						if (req.url.startsWith(route.path)) {
-							if ((await lstat.__promisify__(__dirname + req.url)).isDirectory()) req.url += '/index.html'
-
-							// reading file
-							readFile(__dirname + req.url, 'utf8', (e, data) => {
-								// sending
-								if (!e) {
-									res.send(data)
-								}
-								// error
-								else {
-									// if not found
-									if (e.code == 'ENOENT') {
-										console.log('Not Found')
-										res.send('Not Found', 404)
-									}
-									// else 500
-									else {
-										console.log(e)
-										res.send('Internal Server Error', 500)
-									}
-								}
-								res.end()
-							})
-						} else {
-							console.log('Not Found')
-							res.send('Not Found', 404)
-							res.end()
+					// finding route
+					for (let _route of this.staticRoutes) {
+						if (req.url.startsWith(_route.path)) {
+							if ((await lstat(__dirname + req.url)).isDirectory()) req.url += '/index.html'
+							var staticRoute = _route
 						}
 					}
 				}
 
+				if (!ended && staticRoute) {
+					// reading file
+					try {
+						let data = await readFile(__dirname + req.url, 'utf8')
+						res.send(data)
+					}
+					catch (e) {
+						// if not found
+						if (e.code == 'ENOENT') {
+							if (this.log) console.log('Not Found')
+							if (!this.errorHandler) res.send('Not Found', 404)
+							else this.errorHandler(Error('Not Found'), req, res)
+						}
+						// else 500
+						else {
+							if (this.log) console.log(e)
+							if (!this.errorHandler) res.send('Internal Server Error', 500)
+							else this.errorHandler(e, req, res)
+						}
+					}
+					res.end()
+					ended = true
+				}
+				else if (!ended) {
+					if (this.log) console.log('Not Found')
+					if (!this.errorHandler) res.send('Not Found', 404)
+					else this.errorHandler(Error('Not Found'), req, res)
+				}
+
+				res.end()
+
 				let end = Date.now()
-				console.log(`Request time: ${end - start}ms`)
+				if (this.log) console.log(`Request time: ${end - start}ms`)
 				return this
 			})
 		})
@@ -146,6 +169,14 @@ class tinyhttp {
 			throw TypeError('middleware must be a function');
 		}
 		this.middlewares.push(middleware)
+	}
+
+	// error handler
+	setErrorHandler(handler: ErrorHandler) {
+		if (typeof handler != 'function') {
+			throw TypeError('handler must be a function');
+		}
+		this.errorHandler = handler
 	}
 }
 
