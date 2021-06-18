@@ -181,4 +181,13 @@ class tinyhttp {
 }
 
 export default tinyhttp
-export { parser }
+
+export {
+	parser,
+	tinyhttpParams,
+	ExpressIncomingMessage,
+	ExpressServerResponse,
+	HttpMethods,
+	MiddlewareCallback,
+	ErrorHandler
+}
